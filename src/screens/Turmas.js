@@ -233,19 +233,12 @@ export default function Turmas({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#2d73b5" }}>
+    <ScrollView contentContainerStyle={styles.scrollContent}>
       <ModalCadastro />
       <ModalEditar />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.container}>
           {/* HEADER */}
           <View style={styles.logoContainer}>
-            <TouchableOpacity
-              style={styles.drawer}
-              onPress={() => navigation.openDrawer?.()}
-            >
-              <Ionicons name="menu" size={50} color="#2d73b5" />
-            </TouchableOpacity>
             <Image
               style={styles.logo}
               source={require("../assets/turma-logo.png")}
@@ -298,10 +291,10 @@ export default function Turmas({ navigation }) {
                 </View>
               ))
             )}
+          
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
   );
 }
 
@@ -323,7 +316,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     width: "80%",
   },
