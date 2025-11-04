@@ -1,20 +1,15 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import "react-native-get-random-values";
+import "react-native-url-polyfill/auto";
+import "react-native-gesture-handler"
+import { NavigationContainer } from "@react-navigation/native";
+// Importou o Drawer porque é a navegação principal que escolhemos, mas poderia ser qualquer outra
+import NativeStack from "./src/routes/Routes";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <NativeStack />
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
