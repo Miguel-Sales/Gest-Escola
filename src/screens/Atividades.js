@@ -11,7 +11,6 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
@@ -24,16 +23,15 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 // === CREDENCIAIS AWS ===
-const AWS_ACCESS_KEY_ID = "ASIA47CRZHOBWINBYUJI";
-const AWS_SECRET_ACCESS_KEY = "tUgq3Bm/M2xXj0BKsWbICvRP95bNEFOwy6PwjgHG";
-const AWS_SESSION_TOKEN =
-  "IQoJb3JpZ2luX2VjEKz//////////wEaCXVzLXdlc3QtMiJGMEQCICsVXhcb1dvOAyyNmoDhbJm5g62WVmGoAo7GBCtsI3BeAiA+BS27HXORn8u+YRbVE2PRlo047tna8ul9wVQz3u1opSrCAgh1EAAaDDg5MTM3NzIzNjg2NyIMvqBq8P1nbb+HRtT/Kp8C3GqLkk2z4KuWu/+6oWg3QfE1yt34Ve+JjAu+BQlO0DqMcEF0mIudhMI3q6OcAHKOdWsJcJGtK/Lywb9XD5AgKpWtvonfOOicUhmkGTUTBMPcsPJH1T5anL3noNxWaBCEQ/N8Iq2KqJJlQDkLeYrBbeEskfrA1eHG8/KpQ3xicBnIXFBEX4w5R1Q/TXBz2GhEXcBUnijUJ1pTO3a9VGkGjWr9VMJ9vB7wwQX6f7cfh1X6u7cJx9dYpJYD+XbIvRCHzeaSjxSuBfsZBFbB3NgRL36ArMQxemeaFbPopz4SlMd/pmpdwujZjPmbS9bVYgRWPN9uA0SuQrcMsDzaMbVfdYqkZ8rGdpeAxyqQxDprt1zpfYEkdKBdVNhq1RaL2uAwvc6nyAY6ngHp+FGQZ4AvhRMjOOFaqTUXJDxHl3B/mv0JjKTD2l3Hc6Qym2OxADalFieU/AC9yjSH7xf05xBERKguH3M2JzG13g0FUv0Q7CanJAZSsQrIO2AEj8XDffMSi2RrIa72StifhNZfjMK406qHLbklzuD8dNmvNc8Eu0BonXAuKJBO7bgQLLAG6bQ9JGlfs3pN2W5DtKxXZMXW9cuWFlU60A==";
+const AWS_ACCESS_KEY_ID = "ASIA47CRZHOBRSSE4LHQ";
+const AWS_SECRET_ACCESS_KEY = "W57/6pX8OJPSFE8g/e7ikzCNYdC9p2BQdrGH7X47";
+const AWS_SESSION_TOKEN = "IQoJb3JpZ2luX2VjELL//////////wEaCXVzLXdlc3QtMiJIMEYCIQCfVeNdI31OCl2+umzJtvOb7tNfggZ+HUyuCrvbuRXpOQIhAOsovyT632oQUjr6K0EM9Vqxomq+EUcIFGFtAIr0vXyTKsICCHsQABoMODkxMzc3MjM2ODY3Igw84lItRhBHF/xgQjIqnwIBRB6TQPN5UEJ9ZgQrDUdyspbZ1k2E7iblFOMMn7V8jbc0eA0HXaqU94iEOAzDhnFpw/qheU/abHxRdJ+O5NNFJXp/q+BFMREIcl6EBS4mSTYmeDnK6lZHOKC5758q+rO6fi4A91zFY/V04URocdwdq9QmYueMmq/cV+9mB9jctYj1/rSIzJ/v5B+wY61TJXGBi9MhF3o4jJcUB7H6S6YFeycHRADYOOunOqcpIDG6q3rZF6U7iZ8T05HJmXXmXqjmn1S7kJZ6tT8Ewl5Kr/hBbxL5qRe6wUL5jXdPDiTaF11vboJz0b8sIWM9wZgYsfwLrjsxcfifRi0yZ1zZIZTKFRiuoz1oUYHetr/R49/XXczlIOXI4IF1H9SSBHhM/TDm/6jIBjqcAcblofBPWyQmmnEv3z/PPQx5MHJNi7+suJztDUvtriFCa2hdpXTHQ84MBByZivuMxqDI6BwS9ts0sNDxRjmARdaL6mg7RU8zJJdcKfT+OUDI2anL874yBptmJkm5Bns8VgbWfn9DUiLPICZPrAShqjD3ggXO3sRk6TFdmKADqvVxjNZ5Wa08WuRyVcZtxZpviFTjT3YQQRyPHzejXA==";
 const REGION = "us-east-1";
 
 const TABELA_TURMAS = "Turmas";
 const TABELA_ATIVIDADES = "Atividades";
 
-export default function Atividades({ navigation }) {
+export default function Atividades() {
   const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
   const [atividades, setAtividades] = useState([]);
   const [turmas, setTurmas] = useState([]);
@@ -178,43 +176,42 @@ export default function Atividades({ navigation }) {
     setModalVisivel(true);
   };
 
-  // === INTERFACE ===
   return (
-    
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.container}>
-          {/* HEADER */}
-          <View style={styles.logoContainer}>
-            <Image style={styles.logo} source={require("../assets/turma-logo.png")} />
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
+        {/* HEADER */}
+        <View style={styles.logoContainer}>
+          <Image style={styles.logo} source={require("../assets/turma-logo.png")} />
+        </View>
+
+        {/* CONTEÚDO */}
+        <View style={styles.content}>
+          <View style={styles.headerContainer}>
+            <Text style={styles.title}>Atividades</Text>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => {
+                setEditandoId(null);
+                setNovaAtividade("");
+                setDescricao("");
+                setPrazo("");
+                setTurmaSelecionada("");
+                setModalVisivel(true);
+              }}
+            >
+              <Ionicons name="add-circle" size={50} color="#fff" />
+            </TouchableOpacity>
           </View>
 
-          {/* CONTEÚDO */}
-          <View style={styles.content}>
-            <View style={styles.headerContainer}>
-              <Text style={styles.title}>Atividades</Text>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => {
-                  setEditandoId(null);
-                  setNovaAtividade("");
-                  setDescricao("");
-                  setPrazo("");
-                  setTurmaSelecionada("");
-                  setModalVisivel(true);
-                }}
-              >
-                <Ionicons name="add-circle" size={50} color="#fff" />
-              </TouchableOpacity>
-            </View>
-
-            {loading ? (
-              <ActivityIndicator size="large" color="#fff" />
-            ) : atividades.length === 0 ? (
-              <Text style={styles.noActivities}>Nenhuma atividade cadastrada.</Text>
-            ) : (
-              atividades.map((item) => (
+          {loading ? (
+            <ActivityIndicator size="large" color="#fff" />
+          ) : atividades.length === 0 ? (
+            <Text style={styles.noActivities}>Nenhuma atividade cadastrada.</Text>
+          ) : (
+            <View style={styles.cardsContainer}>
+              {atividades.map((item) => (
                 <View key={item["pk-atividade"]} style={styles.card}>
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.cardText}>
                     <Text style={styles.cardTitle}>{item.titulo}</Text>
                     <Text style={styles.cardDesc}>{item.descricao}</Text>
                     <Text style={styles.cardPrazo}>Prazo: {item.prazo}</Text>
@@ -222,185 +219,150 @@ export default function Atividades({ navigation }) {
                   </View>
                   <View style={styles.cardActions}>
                     <TouchableOpacity onPress={() => editarAtividade(item)}>
-                      <Ionicons name="eye-outline" size={26} color="#2d73b5" />
+                      <Ionicons name="eye-outline" size={24} color="#2d73b5" />
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() =>
                         excluirAtividade(item["pk-atividade"], item["sk-atividade"])
                       }
                     >
-                      <Ionicons name="trash-outline" size={26} color="#2d73b5" />
+                      <Ionicons name="trash-outline" size={24} color="#b52d2d" />
                     </TouchableOpacity>
                   </View>
                 </View>
-              ))
-            )}
-          </View>
+              ))}
+            </View>
+          )}
         </View>
+      </View>
 
-        {/* MODAL */}
-        <Modal visible={modalVisivel} animationType="slide" transparent>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>
-                {editandoId ? "Editar Atividade" : "Nova Atividade"}
+      {/* MODAL */}
+      <Modal visible={modalVisivel} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>
+              {editandoId ? "Editar Atividade" : "Nova Atividade"}
+            </Text>
+
+            <TextInput
+              placeholder="Título da atividade"
+              value={novaAtividade}
+              onChangeText={setNovaAtividade}
+              style={styles.modalInput}
+            />
+            <TextInput
+              placeholder="Descrição"
+              value={descricao}
+              onChangeText={setDescricao}
+              style={styles.modalInput}
+              multiline
+            />
+
+            <TouchableOpacity style={styles.modalInput} onPress={() => setMostrarDatePicker(true)}>
+              <Text style={{ color: prazo ? "#333" : "#666", fontSize: 16 }}>
+                {prazo ? prazo : "Prazo (toque para escolher)"}
               </Text>
+            </TouchableOpacity>
 
-              <TextInput
-                placeholder="Título da atividade"
-                value={novaAtividade}
-                onChangeText={setNovaAtividade}
-                style={styles.modalInput}
+            {mostrarDatePicker && (
+              <DateTimePicker
+                value={new Date()}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setMostrarDatePicker(false);
+                  if (selectedDate) {
+                    const dia = selectedDate.getDate().toString().padStart(2, "0");
+                    const mes = (selectedDate.getMonth() + 1).toString().padStart(2, "0");
+                    const ano = selectedDate.getFullYear();
+                    setPrazo(`${dia}/${mes}/${ano}`);
+                  }
+                }}
               />
-              <TextInput
-                placeholder="Descrição"
-                value={descricao}
-                onChangeText={setDescricao}
-                style={styles.modalInput}
-                multiline
-              />
+            )}
 
-              <TouchableOpacity style={styles.modalInput} onPress={() => setMostrarDatePicker(true)}>
-                <Text style={{ color: prazo ? "#333" : "#666", fontSize: 16 }}>
-                  {prazo ? prazo : "Prazo (toque para escolher)"}
-                </Text>
+            <View style={styles.modalInput}>
+              <Picker
+                selectedValue={turmaSelecionada}
+                onValueChange={(value) => setTurmaSelecionada(value)}
+              >
+                <Picker.Item label="Selecione uma turma" value="" />
+                {turmas.map((t) => (
+                  <Picker.Item key={t["pk-turma"]} label={t.nome} value={t["pk-turma"]} />
+                ))}
+              </Picker>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: "#2d73b5" }]}
+                onPress={salvarAtividade}
+              >
+                <Text style={styles.modalButtonText}>Salvar</Text>
               </TouchableOpacity>
-
-              {mostrarDatePicker && (
-                <DateTimePicker
-                  value={new Date()}
-                  mode="date"
-                  display="default"
-                  onChange={(event, selectedDate) => {
-                    setMostrarDatePicker(false);
-                    if (selectedDate) {
-                      const dia = selectedDate.getDate().toString().padStart(2, "0");
-                      const mes = (selectedDate.getMonth() + 1).toString().padStart(2, "0");
-                      const ano = selectedDate.getFullYear();
-                      setPrazo(`${dia}/${mes}/${ano}`);
-                    }
-                  }}
-                />
-              )}
-
-              <View style={styles.modalInput}>
-                <Picker
-                  selectedValue={turmaSelecionada}
-                  onValueChange={(value) => setTurmaSelecionada(value)}
-                >
-                  <Picker.Item label="Selecione uma turma" value="" />
-                  {turmas.map((t) => (
-                    <Picker.Item key={t["pk-turma"]} label={t.nome} value={t["pk-turma"]} />
-                  ))}
-                </Picker>
-              </View>
-
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, { backgroundColor: "#2d73b5" }]}
-                  onPress={salvarAtividade}
-                >
-                  <Text style={styles.modalButtonText}>Salvar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.modalButton, { backgroundColor: "#ccc" }]}
-                  onPress={() => setModalVisivel(false)}
-                >
-                  <Text style={[styles.modalButtonText, { color: "#000" }]}>Cancelar</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: "#ccc" }]}
+                onPress={() => setModalVisivel(false)}
+              >
+                <Text style={[styles.modalButtonText, { color: "#000" }]}>Cancelar</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-      </ScrollView>
+        </View>
+      </Modal>
+    </ScrollView>
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    paddingTop: 60,
-  },
-  logo: {
-    width: 150,
-    resizeMode: "contain",
-    marginTop: -60,
-  },
-  drawer: {
-    marginTop: -60,
-  },
-  headerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    width: "90%",
-    marginBottom: 10,
-  },
-  logoContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "80%",
-  },
+  container: { flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 60 },
+  logo: { width: 150, resizeMode: "contain", marginTop: -60 },
+  logoContainer: { justifyContent: "center", alignItems: "center" },
   content: {
     width: "100%",
-    height: "150%",
     backgroundColor: "#2d73b5",
     borderTopLeftRadius: 80,
+    borderTopRightRadius: 0,
     alignItems: "center",
     paddingTop: 40,
+    paddingBottom: 40,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-  },
-  addButton: {
-    marginVertical: 15,
-  },
-  listContainer: {
-    width: "90%",
-  },
-  noActivities: {
-    color: "#fff",
-    textAlign: "center",
-    fontSize: 16,
-    marginTop: 20,
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
-    marginVertical: 8,
-    elevation: 3,
-  },
-  cardHeader: {
+  title: { fontSize: 32, fontWeight: "bold", color: "#fff" },
+  headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    width: "85%",
+    alignItems: "center",
+    marginBottom: 20,
   },
-  cardTitle: {
-    fontSize: 18,
-    color: "#2d73b5",
-    fontWeight: "bold",
-    marginBottom: 4,
+  addButton: { marginTop: 10 },
+  noActivities: { color: "#fff", fontSize: 16, marginTop: 20 },
+  cardsContainer: {
+    width: "90%",
+    alignItems: "center",
+    marginTop: 10,
   },
-  cardDesc: {
-    fontSize: 15,
-    color: "#333",
-    marginBottom: 4,
+  card: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 15,
+    marginVertical: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
   },
-  cardPrazo: {
-    fontSize: 14,
-    color: "#555",
-    fontStyle: "italic",
-  },
+  cardText: { marginBottom: 10 },
+  cardTitle: { fontSize: 18, fontWeight: "bold", color: "#2d73b5", marginBottom: 6 },
+  cardDesc: { fontSize: 15, color: "#333", marginBottom: 4 },
+  cardPrazo: { fontSize: 14, color: "#555", fontStyle: "italic", marginBottom: 2 },
+  cardTurma: { fontSize: 14, color: "#777" },
   cardActions: {
     flexDirection: "row",
-    gap: 10,
+    justifyContent: "flex-end",
+    gap: 15,
   },
   modalOverlay: {
     flex: 1,
@@ -436,14 +398,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     marginTop: 15,
   },
-  modalButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 25,
-    borderRadius: 8,
-  },
-  modalButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
+  modalButton: { paddingVertical: 10, paddingHorizontal: 25, borderRadius: 8 },
+  modalButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
