@@ -3,12 +3,16 @@ import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
   Alert,
   StyleSheet,
   ActivityIndicator,
   TextInput,
+  Image,
+  ScrollView,
+  Modal,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -20,7 +24,8 @@ import {
 // === CREDENCIAIS AWS ===
 const AWS_ACCESS_KEY_ID = "ASIA47CRZHOBWINBYUJI";
 const AWS_SECRET_ACCESS_KEY = "tUgq3Bm/M2xXj0BKsWbICvRP95bNEFOwy6PwjgHG";
-const AWS_SESSION_TOKEN = "IQoJb3JpZ2luX2VjEKz//////////wEaCXVzLXdlc3QtMiJGMEQCICsVXhcb1dvOAyyNmoDhbJm5g62WVmGoAo7GBCtsI3BeAiA+BS27HXORn8u+YRbVE2PRlo047tna8ul9wVQz3u1opSrCAgh1EAAaDDg5MTM3NzIzNjg2NyIMvqBq8P1nbb+HRtT/Kp8C3GqLkk2z4KuWu/+6oWg3QfE1yt34Ve+JjAu+BQlO0DqMcEF0mIudhMI3q6OcAHKOdWsJcJGtK/Lywb9XD5AgKpWtvonfOOicUhmkGTUTBMPcsPJH1T5anL3noNxWaBCEQ/N8Iq2KqJJlQDkLeYrBbeEskfrA1eHG8/KpQ3xicBnIXFBEX4w5R1Q/TXBz2GhEXcBUnijUJ1pTO3a9VGkGjWr9VMJ9vB7wwQX6f7cfh1X6u7cJx9dYpJYD+XbIvRCHzeaSjxSuBfsZBFbB3NgRL36ArMQxemeaFbPopz4SlMd/pmpdwujZjPmbS9bVYgRWPN9uA0SuQrcMsDzaMbVfdYqkZ8rGdpeAxyqQxDprt1zpfYEkdKBdVNhq1RaL2uAwvc6nyAY6ngHp+FGQZ4AvhRMjOOFaqTUXJDxHl3B/mv0JjKTD2l3Hc6Qym2OxADalFieU/AC9yjSH7xf05xBERKguH3M2JzG13g0FUv0Q7CanJAZSsQrIO2AEj8XDffMSi2RrIa72StifhNZfjMK406qHLbklzuD8dNmvNc8Eu0BonXAuKJBO7bgQLLAG6bQ9JGlfs3pN2W5DtKxXZMXW9cuWFlU60A==";
+const AWS_SESSION_TOKEN =
+  "IQoJb3JpZ2luX2VjEKz//////////wEaCXVzLXdlc3QtMiJGMEQCICsVXhcb1dvOAyyNmoDhbJm5g62WVmGoAo7GBCtsI3BeAiA+BS27HXORn8u+YRbVE2PRlo047tna8ul9wVQz3u1opSrCAgh1EAAaDDg5MTM3NzIzNjg2NyIMvqBq8P1nbb+HRtT/Kp8C3GqLkk2z4KuWu/+6oWg3QfE1yt34Ve+JjAu+BQlO0DqMcEF0mIudhMI3q6OcAHKOdWsJcJGtK/Lywb9XD5AgKpWtvonfOOicUhmkGTUTBMPcsPJH1T5anL3noNxWaBCEQ/N8Iq2KqJJlQDkLeYrBbeEskfrA1eHG8/KpQ3xicBnIXFBEX4w5R1Q/TXBz2GhEXcBUnijUJ1pTO3a9VGkGjWr9VMJ9vB7wwQX6f7cfh1X6u7cJx9dYpJYD+XbIvRCHzeaSjxSuBfsZBFbB3NgRL36ArMQxemeaFbPopz4SlMd/pmpdwujZjPmbS9bVYgRWPN9uA0SuQrcMsDzaMbVfdYqkZ8rGdpeAxyqQxDprt1zpfYEkdKBdVNhq1RaL2uAwvc6nyAY6ngHp+FGQZ4AvhRMjOOFaqTUXJDxHl3B/mv0JjKTD2l3Hc6Qym2OxADalFieU/AC9yjSH7xf05xBERKguH3M2JzG13g0FUv0Q7CanJAZSsQrIO2AEj8XDffMSi2RrIa72StifhNZfjMK406qHLbklzuD8dNmvNc8Eu0BonXAuKJBO7bgQLLAG6bQ9JGlfs3pN2W5DtKxXZMXW9cuWFlU60A==";
 const REGION = "us-east-1";
 
 // === NOME CORRETO DA TABELA ===
@@ -30,6 +35,10 @@ export default function Turmas({ navigation }) {
   const [turmas, setTurmas] = useState([]);
   const [novaTurma, setNovaTurma] = useState("");
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalEditarVisible, setModalEditarVisible] = useState(false);
+  const [turmaSelecionada, setTurmaSelecionada] = useState(null);
+  const [novoNome, setNovoNome] = useState("");
 
   // === CONFIGURAÇÃO DO DYNAMODB ===
   const client = new DynamoDBClient({
@@ -70,8 +79,8 @@ export default function Turmas({ navigation }) {
 
     const agora = new Date().toISOString();
     const nova = {
-      "pk-turma": `turma#${Date.now()}`, // ✅ Partition key obrigatória
-      "sk-turma": `data#${agora}`, // ✅ Sort key obrigatória
+      "pk-turma": `turma#${Date.now()}`,
+      "sk-turma": `data#${agora}`,
       nome: novaTurma.trim(),
       criadoEm: agora,
     };
@@ -80,10 +89,40 @@ export default function Turmas({ navigation }) {
       await db.send(new PutCommand({ TableName: TABELA, Item: nova }));
       setTurmas((prev) => [...prev, nova]);
       setNovaTurma("");
+      setModalVisible(false);
       Alert.alert("Sucesso", "Turma cadastrada com sucesso!");
     } catch (error) {
       console.error("Erro ao adicionar turma:", error);
       Alert.alert("Erro", "Falha ao cadastrar turma.");
+    }
+  };
+
+  // === EDITAR TURMA ===
+  const salvarEdicao = async () => {
+    if (!novoNome.trim()) {
+      Alert.alert("Aviso", "Digite o novo nome da turma.");
+      return;
+    }
+
+    try {
+      const turmaAtualizada = {
+        ...turmaSelecionada,
+        nome: novoNome.trim(),
+      };
+
+      await db.send(new PutCommand({ TableName: TABELA, Item: turmaAtualizada }));
+
+      setTurmas((prev) =>
+        prev.map((t) =>
+          t["pk-turma"] === turmaSelecionada["pk-turma"] ? turmaAtualizada : t
+        )
+      );
+
+      setModalEditarVisible(false);
+      Alert.alert("Sucesso", "Turma atualizada!");
+    } catch (error) {
+      console.error("Erro ao editar turma:", error);
+      Alert.alert("Erro", "Falha ao atualizar turma.");
     }
   };
 
@@ -99,7 +138,7 @@ export default function Turmas({ navigation }) {
             await db.send(
               new DeleteCommand({
                 TableName: TABELA,
-                Key: { "pk-turma": pk, "sk-turma": sk }, // ✅ Usa ambas as chaves
+                Key: { "pk-turma": pk, "sk-turma": sk },
               })
             );
             setTurmas((prev) =>
@@ -115,120 +154,269 @@ export default function Turmas({ navigation }) {
     ]);
   };
 
-  // === SAIR ===
-  const sair = () => {
-    navigation.replace("Login");
-  };
+  // === MODAL CADASTRO ===
+  const ModalCadastro = () => (
+    <Modal
+      visible={modalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Cadastrar Nova Turma</Text>
 
-  // === RENDERIZAÇÃO ===
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.titulo}>Bem-vindo, Professor!</Text>
-        <TouchableOpacity style={styles.botaoSair} onPress={sair}>
-          <Text style={styles.textoBotaoSair}>Sair</Text>
-        </TouchableOpacity>
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Digite o nome da turma"
+            value={novaTurma}
+            onChangeText={setNovaTurma}
+          />
+
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: "#2d73b5" }]}
+              onPress={adicionarTurma}
+            >
+              <Text style={styles.modalButtonText}>Salvar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: "#999" }]}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.modalButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
+    </Modal>
+  );
 
-      <TextInput
-        style={styles.input}
-        placeholder="Digite o nome da turma"
-        value={novaTurma}
-        onChangeText={setNovaTurma}
-      />
+  // === MODAL EDITAR / VISUALIZAR ===
+  const ModalEditar = () => (
+    <Modal
+      visible={modalEditarVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={() => setModalEditarVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Editar Turma</Text>
 
-      <TouchableOpacity style={styles.botaoCadastrar} onPress={adicionarTurma}>
-        <Text style={styles.textoBotao}>+ Cadastrar Turma</Text>
-      </TouchableOpacity>
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Novo nome da turma"
+            value={novoNome}
+            onChangeText={setNovoNome}
+          />
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#305F49" />
-      ) : (
-        <FlatList
-          data={turmas}
-          keyExtractor={(item) => item["sk-turma"]}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <View>
-                <Text style={styles.textoTurma}>
-                  ID: {item["pk-turma"]}
-                </Text>
-                <Text style={styles.textoTurma}>
-                  Nome: {item.nome}
-                </Text>
-              </View>
-              <View style={styles.botoes}>
-                <TouchableOpacity
-                  style={[styles.botao, { backgroundColor: "#3C6E71" }]}
-                  onPress={() =>
-                    navigation.navigate("Atividades", { turma: item })
-                  }
-                >
-                  <Text style={styles.textoBotao}>Ver</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.botao, { backgroundColor: "#D9534F" }]}
-                  onPress={() =>
-                    excluirTurma(item["pk-turma"], item["sk-turma"])
-                  }
-                >
-                  <Text style={styles.textoBotao}>Excluir</Text>
-                </TouchableOpacity>
-              </View>
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: "#2d73b5" }]}
+              onPress={salvarEdicao}
+            >
+              <Text style={styles.modalButtonText}>Salvar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: "#999" }]}
+              onPress={() => setModalEditarVisible(false)}
+            >
+              <Text style={styles.modalButtonText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#2d73b5" }}>
+      <ModalCadastro />
+      <ModalEditar />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.container}>
+          {/* HEADER */}
+          <View style={styles.logoContainer}>
+            <TouchableOpacity
+              style={styles.drawer}
+              onPress={() => navigation.openDrawer?.()}
+            >
+              <Ionicons name="menu" size={50} color="#2d73b5" />
+            </TouchableOpacity>
+            <Image
+              style={styles.logo}
+              source={require("../assets/turma-logo.png")}
+            />
+          </View>
+
+          {/* CONTEÚDO */}
+          <View style={styles.content}>
+            <View style={styles.headerContainer}>
+              <Text style={styles.title}>Turmas</Text>
+
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => setModalVisible(true)}
+              >
+                <Ionicons name="add-circle" size={50} color="#fff" />
+              </TouchableOpacity>
             </View>
-          )}
-        />
-      )}
-    </View>
+
+            {loading ? (
+              <ActivityIndicator size="large" color="#fff" />
+            ) : turmas.length === 0 ? (
+              <Text style={styles.noActivities}>
+                Nenhuma turma cadastrada ainda.
+              </Text>
+            ) : (
+              turmas.map((item) => (
+                <View key={item["sk-turma"]} style={styles.card}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.cardTitle}>{item.nome}</Text>
+                  </View>
+                  <View style={styles.cardActions}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setTurmaSelecionada(item);
+                        setNovoNome(item.nome);
+                        setModalEditarVisible(true);
+                      }}
+                    >
+                      <Ionicons name="eye-outline" size={26} color="#2d73b5" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        excluirTurma(item["pk-turma"], item["sk-turma"])
+                      }
+                    >
+                      <Ionicons name="trash-outline" size={26} color="#2d73b5" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-// === ESTILOS ===
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F3ECE2", padding: 20 },
-  header: {
+  scrollContent: { flexGrow: 1 },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    paddingTop: 60,
+  },
+  logo: {
+    width: 150,
+    resizeMode: "contain",
+    marginTop: -60,
+  },
+  drawer: {
+    marginTop: -60,
+  },
+  logoContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    width: "80%",
   },
-  titulo: { fontSize: 22, fontWeight: "bold", color: "#2C3E50" },
-  botaoSair: {
-    backgroundColor: "#C0392B",
-    padding: 10,
-    borderRadius: 8,
-  },
-  textoBotaoSair: { color: "#fff", fontWeight: "bold" },
-  input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-    borderColor: "#ccc",
-    borderWidth: 1,
-  },
-  botaoCadastrar: {
-    backgroundColor: "#305F49",
-    padding: 12,
-    borderRadius: 10,
+  content: {
+    flex: 1,
+    width: "100%",
+    backgroundColor: "#2d73b5",
+    borderTopLeftRadius: 80,
     alignItems: "center",
-    marginBottom: 20,
+    paddingTop: 40,
   },
-  textoBotao: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    width: "90%",
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
+  },
+  addButton: { marginVertical: 15 },
+  noActivities: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 16,
+    marginTop: 20,
+  },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 15,
-    marginBottom: 10,
+    marginVertical: 8,
+    elevation: 3,
+    width: "90%",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  textoTurma: { fontSize: 16, color: "#2C3E50" },
-  botoes: { flexDirection: "row", gap: 10 },
-  botao: { padding: 10, borderRadius: 8 },
+  cardTitle: {
+    fontSize: 18,
+    color: "#2d73b5",
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  cardActions: { flexDirection: "row", gap: 10 },
+
+  // === ESTILOS DO MODAL ===
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#2d73b5",
+    marginBottom: 15,
+  },
+  modalInput: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 20,
+    fontSize: 16,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalButton: {
+    flex: 1,
+    marginHorizontal: 5,
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
