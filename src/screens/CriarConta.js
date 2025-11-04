@@ -11,12 +11,13 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScanCommand } from "@aws-sdk/client-dynamodb";
+import { Ionicons } from "@expo/vector-icons";
 import bcrypt from "bcryptjs";
 
 export default function LoginScreen({ navigation }) {
+  const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
@@ -71,11 +72,7 @@ export default function LoginScreen({ navigation }) {
       Alert.alert("Sucesso", `Bem-vindo, ${usuario.nome.S}!`);
       await AsyncStorage.setItem("usuarioId", usuario.id.N);
 
-      if (tipoUsuario === "admin") {
-        navigation.navigate("Inicio");
-      } else {
-        navigation.navigate("Inicio");
-      }
+      navigation.navigate("Inicio");
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       Alert.alert("Erro", "Falha na autenticação. Tente novamente.");
@@ -87,10 +84,31 @@ export default function LoginScreen({ navigation }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#2d73b5" }}>
       <View style={styles.container}>
-        <Image style={styles.logo} source={require("../assets/turma-logo.png")} />
+        <Image
+          style={styles.logo}
+          source={require("../assets/turma-logo.png")}
+        />
 
         <View style={styles.loginCard}>
-          <Text style={styles.title}>Entre na sua{"\n"}conta</Text>
+          {/* 🔙 Linha com o botão de voltar e o título */}
+          <View style={styles.headerRow}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={32} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.title}>Criar conta</Text>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Nome</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite seu nome"
+              placeholderTextColor="#2d73b5"
+              value={nome}
+              onChangeText={setNome}
+              autoCapitalize="none"
+            />
+          </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email</Text>
@@ -124,14 +142,8 @@ export default function LoginScreen({ navigation }) {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Login</Text>
+              <Text style={styles.buttonText}>Confirmar</Text>
             )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate("CriarConta")}
-          >
-            <Text style={styles.forgotPassword}>Não possui uma conta? Crie uma conta</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -156,18 +168,24 @@ const styles = StyleSheet.create({
   loginCard: {
     flex: 1,
     width: "100%",
-    height: "100%",
     backgroundColor: "#2d73b5",
     borderTopLeftRadius: 120,
     alignItems: "center",
     paddingTop: 40,
   },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "80%",
+    marginBottom: 30,
+  },
   title: {
-    fontSize: 42,
+    fontSize: 36,
     fontWeight: "bold",
     color: "#fff",
     textAlign: "center",
-    marginBottom: 30,
+    marginLeft: 10,
     fontFamily: "Roboto-Bold",
   },
   inputGroup: {
@@ -205,14 +223,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
-    fontFamily: "Roboto-Bold",
-  },
-  forgotPassword: {
-    marginTop: 15,
-    marginBottom: 10,
-    color: "#fff",
-    fontSize: 16,
-    textDecorationLine: "underline",
     fontFamily: "Roboto-Bold",
   },
 });
