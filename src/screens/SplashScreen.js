@@ -12,7 +12,7 @@ export default function SplashScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../assets/Turma.png")} // ajuste conforme sua estrutura
+        source={require("../assets/turma-logo.png")} // ajuste conforme sua estrutura
         style={styles.logo}
       />
     </View>
@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F3ECE2",
+    backgroundColor: "#fff",
   },
   logo: {
     width: 300,
