@@ -89,14 +89,11 @@ export default function Atividades({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#2d73b5" }}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
           {/* HEADER */}
           <View style={styles.logoContainer}>
-            <TouchableOpacity style={styles.drawer} onPress={() => navigation.openDrawer?.()}>
-              <Ionicons name="menu" size={50} color="#2d73b5" />
-            </TouchableOpacity>
             <Image style={styles.logo} source={require("../assets/turma-logo.png")} />
           </View>
 
@@ -220,7 +217,6 @@ export default function Atividades({ navigation }) {
           </View>
         </Modal>
       </ScrollView>
-    </SafeAreaView>
   );
 }
 
@@ -248,13 +244,13 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     width: "80%",
   },
   content: {
-    flex: 1,
     width: "100%",
+    height: "150%",
     backgroundColor: "#2d73b5",
     borderTopLeftRadius: 80,
     alignItems: "center",
