@@ -320,6 +320,7 @@ const styles = StyleSheet.create({
   logoContainer: { justifyContent: "center", alignItems: "center" },
   content: {
     width: "100%",
+    height:"1000%",
     backgroundColor: "#2d73b5",
     borderTopLeftRadius: 80,
     borderTopRightRadius: 0,
