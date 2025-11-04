@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import SplashScreen from "../screens/SplashScreen";
 import Login from "../screens/Login";
+import Turmas from "../screens/Turmas"
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -12,13 +13,16 @@ export default function NativeStack() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName="Splash"
+      initialRouteName="Turmas"
     >
       {/* Splash inicial */}
       <Stack.Screen name="Splash" component={SplashScreen} />
 
       {/* Tela de Login */}
       <Stack.Screen name="Login" component={Login} />
+
+      <Stack.Screen name="Turmas" component={Turmas} />
+
 
       {/* Drawer desativado temporariamente */}
       {/* <Stack.Screen

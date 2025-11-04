@@ -18,14 +18,4 @@ export const dynamoDB = new DynamoDBClient({
   },
 });
 
-// Configuração do S3 (caso use upload de imagens)
-export const s3 = new S3Client({
-  region: REGION,
-  credentials: {
-    accessKeyId: AWS_ACCESS_KEY_ID,
-    secretAccessKey: AWS_SECRET_ACCESS_KEY,
-    sessionToken: AWS_SESSION_TOKEN,
-  },
-});
-
 export default dynamoDB;
