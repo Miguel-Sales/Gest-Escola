@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,28 +9,89 @@ import {
   TextInput,
   Alert,
   Modal,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  ScanCommand,
+  PutCommand,
+  DeleteCommand,
+} from "@aws-sdk/lib-dynamodb";
+
+// === CREDENCIAIS AWS ===
+const AWS_ACCESS_KEY_ID = "ASIA47CRZHOBWINBYUJI";
+const AWS_SECRET_ACCESS_KEY = "tUgq3Bm/M2xXj0BKsWbICvRP95bNEFOwy6PwjgHG";
+const AWS_SESSION_TOKEN =
+  "IQoJb3JpZ2luX2VjEKz//////////wEaCXVzLXdlc3QtMiJGMEQCICsVXhcb1dvOAyyNmoDhbJm5g62WVmGoAo7GBCtsI3BeAiA+BS27HXORn8u+YRbVE2PRlo047tna8ul9wVQz3u1opSrCAgh1EAAaDDg5MTM3NzIzNjg2NyIMvqBq8P1nbb+HRtT/Kp8C3GqLkk2z4KuWu/+6oWg3QfE1yt34Ve+JjAu+BQlO0DqMcEF0mIudhMI3q6OcAHKOdWsJcJGtK/Lywb9XD5AgKpWtvonfOOicUhmkGTUTBMPcsPJH1T5anL3noNxWaBCEQ/N8Iq2KqJJlQDkLeYrBbeEskfrA1eHG8/KpQ3xicBnIXFBEX4w5R1Q/TXBz2GhEXcBUnijUJ1pTO3a9VGkGjWr9VMJ9vB7wwQX6f7cfh1X6u7cJx9dYpJYD+XbIvRCHzeaSjxSuBfsZBFbB3NgRL36ArMQxemeaFbPopz4SlMd/pmpdwujZjPmbS9bVYgRWPN9uA0SuQrcMsDzaMbVfdYqkZ8rGdpeAxyqQxDprt1zpfYEkdKBdVNhq1RaL2uAwvc6nyAY6ngHp+FGQZ4AvhRMjOOFaqTUXJDxHl3B/mv0JjKTD2l3Hc6Qym2OxADalFieU/AC9yjSH7xf05xBERKguH3M2JzG13g0FUv0Q7CanJAZSsQrIO2AEj8XDffMSi2RrIa72StifhNZfjMK406qHLbklzuD8dNmvNc8Eu0BonXAuKJBO7bgQLLAG6bQ9JGlfs3pN2W5DtKxXZMXW9cuWFlU60A==";
+const REGION = "us-east-1";
+
+const TABELA_TURMAS = "Turmas";
+const TABELA_ATIVIDADES = "Atividades";
 
 export default function Atividades({ navigation }) {
   const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
   const [atividades, setAtividades] = useState([]);
+  const [turmas, setTurmas] = useState([]);
+  const [turmaSelecionada, setTurmaSelecionada] = useState("");
   const [novaAtividade, setNovaAtividade] = useState("");
   const [descricao, setDescricao] = useState("");
   const [prazo, setPrazo] = useState("");
   const [editandoId, setEditandoId] = useState(null);
   const [modalVisivel, setModalVisivel] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Função principal para criar ou editar
-  const salvarAtividade = () => {
-    if (!novaAtividade.trim() || !descricao.trim() || !prazo.trim()) {
+  // === CONFIGURAÇÃO DYNAMODB ===
+  const client = new DynamoDBClient({
+    region: REGION,
+    credentials: {
+      accessKeyId: AWS_ACCESS_KEY_ID,
+      secretAccessKey: AWS_SECRET_ACCESS_KEY,
+      sessionToken: AWS_SESSION_TOKEN,
+    },
+  });
+  const db = DynamoDBDocumentClient.from(client);
+
+  // === LISTAR TURMAS ===
+  const listarTurmas = async () => {
+    try {
+      const data = await db.send(new ScanCommand({ TableName: TABELA_TURMAS }));
+      setTurmas(data.Items || []);
+    } catch (error) {
+      console.error("Erro ao buscar turmas:", error);
+      Alert.alert("Erro", "Não foi possível carregar as turmas.");
+    }
+  };
+
+  // === LISTAR ATIVIDADES ===
+  const listarAtividades = async () => {
+    try {
+      const data = await db.send(new ScanCommand({ TableName: TABELA_ATIVIDADES }));
+      setAtividades(data.Items || []);
+    } catch (error) {
+      console.error("Erro ao buscar atividades:", error);
+      Alert.alert("Erro", "Não foi possível carregar as atividades.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    listarTurmas();
+    listarAtividades();
+  }, []);
+
+  // === SALVAR ATIVIDADE ===
+  const salvarAtividade = async () => {
+    if (!novaAtividade.trim() || !descricao.trim() || !prazo.trim() || !turmaSelecionada) {
       Alert.alert("Aviso", "Preencha todos os campos!");
       return;
     }
 
-    // Impede datas passadas
     const [dia, mes, ano] = prazo.split("/").map(Number);
     const dataSelecionada = new Date(ano, mes - 1, dia);
     const hoje = new Date();
@@ -40,57 +101,87 @@ export default function Atividades({ navigation }) {
       return;
     }
 
-    // Atualiza se estiver editando
-    if (editandoId) {
-      setAtividades((prev) =>
-        prev.map((item) =>
-          item.id === editandoId
-            ? { ...item, titulo: novaAtividade, descricao, prazo }
-            : item
-        )
-      );
-      setEditandoId(null);
-    } else {
-      // Cria nova atividade
-      const nova = {
-        id: Date.now().toString(),
-        titulo: novaAtividade,
-        descricao,
-        prazo,
-      };
-      setAtividades([...atividades, nova]);
-    }
+    const turma = turmas.find((t) => t["pk-turma"] === turmaSelecionada);
+    const agora = new Date().toISOString();
 
-    // Limpa e fecha modal
-    setNovaAtividade("");
-    setDescricao("");
-    setPrazo("");
-    setModalVisivel(false);
+    const nova = {
+      "pk-atividade": editandoId ? editandoId : `atividade#${Date.now()}`,
+      "sk-atividade": `data#${agora}`,
+      titulo: novaAtividade,
+      descricao,
+      prazo,
+      turmaId: turmaSelecionada,
+      turmaNome: turma?.nome || "Sem nome",
+      criadoEm: agora,
+    };
+
+    try {
+      await db.send(new PutCommand({ TableName: TABELA_ATIVIDADES, Item: nova }));
+      if (editandoId) {
+        setAtividades((prev) =>
+          prev.map((item) =>
+            item["pk-atividade"] === editandoId ? { ...item, ...nova } : item
+          )
+        );
+      } else {
+        setAtividades((prev) => [...prev, nova]);
+      }
+
+      Alert.alert("Sucesso", "Atividade salva com sucesso!");
+      setModalVisivel(false);
+      setNovaAtividade("");
+      setDescricao("");
+      setPrazo("");
+      setTurmaSelecionada("");
+      setEditandoId(null);
+    } catch (error) {
+      console.error("Erro ao salvar atividade:", error);
+      Alert.alert("Erro", "Falha ao salvar atividade.");
+    }
   };
 
-  const excluirAtividade = (id) => {
-    Alert.alert("Excluir atividade", "Deseja realmente excluir esta atividade?", [
+  // === EXCLUIR ===
+  const excluirAtividade = (pk, sk) => {
+    Alert.alert("Excluir", "Deseja realmente excluir esta atividade?", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Excluir",
         style: "destructive",
-        onPress: () => setAtividades(atividades.filter((item) => item.id !== id)),
+        onPress: async () => {
+          try {
+            await db.send(
+              new DeleteCommand({
+                TableName: TABELA_ATIVIDADES,
+                Key: { "pk-atividade": pk, "sk-atividade": sk },
+              })
+            );
+            setAtividades((prev) =>
+              prev.filter((a) => a["pk-atividade"] !== pk || a["sk-atividade"] !== sk)
+            );
+            Alert.alert("Sucesso", "Atividade excluída!");
+          } catch (error) {
+            console.error("Erro ao excluir:", error);
+            Alert.alert("Erro", "Falha ao excluir atividade.");
+          }
+        },
       },
     ]);
   };
 
-  // Abre modal com dados do item clicado
+  // === EDITAR ===
   const editarAtividade = (item) => {
-    setEditandoId(item.id);
+    setEditandoId(item["pk-atividade"]);
     setNovaAtividade(item.titulo);
     setDescricao(item.descricao);
     setPrazo(item.prazo);
+    setTurmaSelecionada(item.turmaId);
     setModalVisivel(true);
   };
 
+  // === INTERFACE ===
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#2d73b5" }}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.container}>
           {/* HEADER */}
           <View style={styles.logoContainer}>
@@ -104,7 +195,6 @@ export default function Atividades({ navigation }) {
           <View style={styles.content}>
             <View style={styles.headerContainer}>
               <Text style={styles.title}>Atividades</Text>
-
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => {
@@ -112,6 +202,7 @@ export default function Atividades({ navigation }) {
                   setNovaAtividade("");
                   setDescricao("");
                   setPrazo("");
+                  setTurmaSelecionada("");
                   setModalVisivel(true);
                 }}
               >
@@ -119,36 +210,38 @@ export default function Atividades({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            {/* LISTA DE ATIVIDADES */}
-            <View style={styles.listContainer}>
-              {atividades.length === 0 ? (
-                <Text style={styles.noActivities}>Nenhuma atividade adicionada ainda.</Text>
-              ) : (
-                atividades.map((item) => (
-                  <View key={item.id} style={styles.card}>
-                    <View style={styles.cardHeader}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.cardTitle}>{item.titulo}</Text>
-                        <Text style={styles.cardDesc}>{item.descricao}</Text>
-                        <Text style={styles.cardPrazo}>Prazo: {item.prazo}</Text>
-                      </View>
-                      <View style={styles.cardActions}>
-                        <TouchableOpacity onPress={() => editarAtividade(item)}>
-                          <Ionicons name="create-outline" size={26} color="#2d73b5" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => excluirAtividade(item.id)}>
-                          <Ionicons name="trash-outline" size={26} color="#2d73b5" />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
+            {loading ? (
+              <ActivityIndicator size="large" color="#fff" />
+            ) : atividades.length === 0 ? (
+              <Text style={styles.noActivities}>Nenhuma atividade cadastrada.</Text>
+            ) : (
+              atividades.map((item) => (
+                <View key={item["pk-atividade"]} style={styles.card}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.cardTitle}>{item.titulo}</Text>
+                    <Text style={styles.cardDesc}>{item.descricao}</Text>
+                    <Text style={styles.cardPrazo}>Prazo: {item.prazo}</Text>
+                    <Text style={styles.cardTurma}>Turma: {item.turmaNome}</Text>
                   </View>
-                ))
-              )}
-            </View>
+                  <View style={styles.cardActions}>
+                    <TouchableOpacity onPress={() => editarAtividade(item)}>
+                      <Ionicons name="eye-outline" size={26} color="#2d73b5" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        excluirAtividade(item["pk-atividade"], item["sk-atividade"])
+                      }
+                    >
+                      <Ionicons name="trash-outline" size={26} color="#2d73b5" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            )}
           </View>
         </View>
 
-        {/* MODAL CRIAÇÃO / EDIÇÃO */}
+        {/* MODAL */}
         <Modal visible={modalVisivel} animationType="slide" transparent>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
@@ -158,20 +251,16 @@ export default function Atividades({ navigation }) {
 
               <TextInput
                 placeholder="Título da atividade"
-                placeholderTextColor="#666"
                 value={novaAtividade}
                 onChangeText={setNovaAtividade}
                 style={styles.modalInput}
               />
               <TextInput
                 placeholder="Descrição"
-                placeholderTextColor="#666"
                 value={descricao}
                 onChangeText={setDescricao}
                 style={styles.modalInput}
                 multiline
-                numberOfLines={4}
-                textAlignVertical="top"
               />
 
               <TouchableOpacity style={styles.modalInput} onPress={() => setMostrarDatePicker(true)}>
@@ -197,21 +286,28 @@ export default function Atividades({ navigation }) {
                 />
               )}
 
+              <View style={styles.modalInput}>
+                <Picker
+                  selectedValue={turmaSelecionada}
+                  onValueChange={(value) => setTurmaSelecionada(value)}
+                >
+                  <Picker.Item label="Selecione uma turma" value="" />
+                  {turmas.map((t) => (
+                    <Picker.Item key={t["pk-turma"]} label={t.nome} value={t["pk-turma"]} />
+                  ))}
+                </Picker>
+              </View>
+
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={[styles.modalButton, { backgroundColor: "#2d73b5" }]}
                   onPress={salvarAtividade}
                 >
-                  <Text style={styles.modalButtonText}>
-                    {editandoId ? "Salvar" : "Salvar"}
-                  </Text>
+                  <Text style={styles.modalButtonText}>Salvar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.modalButton, { backgroundColor: "#ccc" }]}
-                  onPress={() => {
-                    setModalVisivel(false);
-                    setEditandoId(null);
-                  }}
+                  onPress={() => setModalVisivel(false)}
                 >
                   <Text style={[styles.modalButtonText, { color: "#000" }]}>Cancelar</Text>
                 </TouchableOpacity>
@@ -223,6 +319,7 @@ export default function Atividades({ navigation }) {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
