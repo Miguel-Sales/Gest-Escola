@@ -2,6 +2,7 @@ import React from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+import SplashScreen from "../screens/SplashScreen";
 import Login from "../screens/Login";
 
 const Stack = createNativeStackNavigator();
@@ -9,14 +10,17 @@ const Drawer = createDrawerNavigator();
 
 export default function NativeStack() {
   return (
-     <Stack.Navigator
+    <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName="Login"
+      initialRouteName="Splash"
     >
-      <Stack.Screen
-        name="Login"
-        component={Login}
-      />
+      {/* Splash inicial */}
+      <Stack.Screen name="Splash" component={SplashScreen} />
+
+      {/* Tela de Login */}
+      <Stack.Screen name="Login" component={Login} />
+
+      {/* Drawer desativado temporariamente */}
       {/* <Stack.Screen
         name="App"
         component={DrawerNavigator}
@@ -52,7 +56,7 @@ export default function NativeStack() {
 //           drawerLabel: "Início",
 //         }}
 //       />
-//     <Drawer.Screen
+//       <Drawer.Screen
 //         name="Inicio"
 //         component={Atividades}
 //         options={{
