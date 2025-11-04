@@ -12,77 +12,74 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ScanCommand } from "@aws-sdk/client-dynamodb";
+import {
+  QueryCommand,
+  PutItemCommand,
+} from "@aws-sdk/client-dynamodb";
 import { Ionicons } from "@expo/vector-icons";
 import bcrypt from "bcryptjs";
 
-export default function LoginScreen({ navigation }) {
+export default function CriarContaScreen({
+  navigation,
+}) {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const fazerLogin = async () => {
-    if (!email || !senha) {
-      Alert.alert("Erro", "Preencha todos os campos!");
-      return;
-    }
+const criarConta = async () => {
+  if (!nome || !email || !senha) {
+    Alert.alert("Erro", "Preencha todos os campos!");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const data = await dynamoDB.send(
-        new ScanCommand({
-          TableName: "usuarios",
-          FilterExpression: "email = :email",
-          ExpressionAttributeValues: {
-            ":email": { S: email },
-          },
-        })
-      );
+  setLoading(true);
 
-      if (!data.Items || data.Items.length === 0) {
-        Alert.alert("Erro", "Usuário não encontrado!");
-        setLoading(false);
-        return;
-      }
+  try {
+    // 🔒 Criptografa a senha
+    const salt = bcrypt.genSaltSync(10);
+    const senhaHash = bcrypt.hashSync(senha, salt);
 
-      const usuario = data.Items[0];
-      const senhaHash = usuario.senha.S;
+    // 🧾 Cria o novo usuário no DynamoDB
+    const novoUsuario = {
+      TableName: "Professores",
+      Item: {
+        id: { S: Date.now().toString() },
+        nome: { S: nome },
+        email: { S: email },
+        senha: { S: senhaHash },
+      },
+    };
 
-      const senhaCorreta = await bcrypt.compare(senha, senhaHash);
+    await dynamoDB.send(new PutItemCommand(novoUsuario));
 
-      if (!senhaCorreta) {
-        Alert.alert("Erro", "Senha incorreta!");
-        setLoading(false);
-        return;
-      }
+    // 💾 Salva dados localmente
+    await AsyncStorage.setItem(
+      "usuarioLogado",
+      JSON.stringify({
+        id: novoUsuario.Item.id.S,
+        nome: nome,
+        email: email,
+      })
+    );
 
-      const tipoUsuario = usuario.tipo.S;
-
-      await AsyncStorage.setItem(
-        "usuarioLogado",
-        JSON.stringify({
-          id: usuario.id.S,
-          nome: usuario.nome.S,
-          email: usuario.email.S,
-          tipo: tipoUsuario,
-        })
-      );
-
-      Alert.alert("Sucesso", `Bem-vindo, ${usuario.nome.S}!`);
-      await AsyncStorage.setItem("usuarioId", usuario.id.N);
-
-      navigation.navigate("Inicio");
-    } catch (error) {
-      console.error("Erro ao fazer login:", error);
-      Alert.alert("Erro", "Falha na autenticação. Tente novamente.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    Alert.alert("Sucesso", "Conta criada com sucesso!");
+    navigation.navigate("Inicio");
+  } catch (error) {
+    console.error("Erro ao criar conta:", error);
+    Alert.alert("Erro", "Falha ao criar conta. Tente novamente.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#2d73b5" }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: "#2d73b5",
+      }}
+    >
       <View style={styles.container}>
         <Image
           style={styles.logo}
@@ -90,12 +87,19 @@ export default function LoginScreen({ navigation }) {
         />
 
         <View style={styles.loginCard}>
-          {/* 🔙 Linha com o botão de voltar e o título */}
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={32} color="#fff" />
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={32}
+                color="#fff"
+              />
             </TouchableOpacity>
-            <Text style={styles.title}>Criar conta</Text>
+            <Text style={styles.title}>
+              Criar conta
+            </Text>
           </View>
 
           <View style={styles.inputGroup}>
@@ -111,7 +115,9 @@ export default function LoginScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>
+              Email
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Digite seu email"
@@ -123,7 +129,9 @@ export default function LoginScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Senha</Text>
+            <Text style={styles.label}>
+              Senha
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Digite sua senha"
@@ -136,13 +144,15 @@ export default function LoginScreen({ navigation }) {
 
           <TouchableOpacity
             style={styles.button}
-            onPress={fazerLogin}
+            onPress={criarConta}
             disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Confirmar</Text>
+              <Text style={styles.buttonText}>
+                Confirmar
+              </Text>
             )}
           </TouchableOpacity>
         </View>
