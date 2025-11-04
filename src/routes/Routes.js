@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import SplashScreen from "../screens/SplashScreen";
 import Login from "../screens/Login";
 import Turmas from "../screens/Turmas"
+import Atividades from "../screens/Atividades";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -13,7 +14,7 @@ export default function NativeStack() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName="Turmas"
+      initialRouteName="App"
     >
       {/* Splash inicial */}
       <Stack.Screen name="Splash" component={SplashScreen} />
@@ -25,48 +26,41 @@ export default function NativeStack() {
 
 
       {/* Drawer desativado temporariamente */}
-      {/* <Stack.Screen
+      <Stack.Screen
         name="App"
         component={DrawerNavigator}
-      /> */}
+      />
     </Stack.Navigator>
   );
 }
 
-// export function DrawerNavigator() {
-//   return (
-//     <Drawer.Navigator
-//       screenOptions={{
-//         headerShown: false,
-//         drawerActiveTintColor: "#fff",
-//         drawerInactiveTintColor: "#fff",
-//         drawerStyle: {
-//           backgroundColor: "#305F49",
-//           width: 320,
-//           borderTopRightRadius: 20,
-//           borderBottomRightRadius: 20,
-//         },
-//         drawerLabelStyle: {
-//           fontWeight: "bold",
-//           fontSize: 20,
-//           marginLeft: 5,
-//         },
-//       }}
-//     >
-//       <Drawer.Screen
-//         name="Inicio"
-//         component={Inicio}
-//         options={{
-//           drawerLabel: "Início",
-//         }}
-//       />
-//       <Drawer.Screen
-//         name="Inicio"
-//         component={Atividades}
-//         options={{
-//           drawerLabel: "Atividades",
-//         }}
-//       />
-//     </Drawer.Navigator>
-//   );
-// }
+export function DrawerNavigator() {
+  return (
+    <Drawer.Navigator
+      screenOptions={{
+        headerShown: false,
+        drawerActiveTintColor: "#fff",
+        drawerInactiveTintColor: "#fff",
+        drawerStyle: {
+          backgroundColor: "#2d73b5",
+          width: 320,
+          borderTopRightRadius: 20,
+          borderBottomRightRadius: 20,
+        },
+        drawerLabelStyle: {
+          fontWeight: "bold",
+          fontSize: 20,
+          marginLeft: 5,
+        },
+      }}
+    >
+      <Drawer.Screen
+        name="Atividades"
+        component={Atividades}
+        options={{
+          drawerLabel: "Atividades",
+        }}
+      />
+    </Drawer.Navigator>
+  );
+}
