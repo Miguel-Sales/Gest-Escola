@@ -88,9 +88,6 @@ export default function LoginScreen({ navigation }) {
         "usuarioId",
         usuario.id?.S || usuario.id?.N || ""
       );
-
-      Alert.alert("Sucesso", `Bem-vindo, ${usuario.nome.S}!`);
-
       // Redirecionar conforme tipo de usuário
       navigation.navigate("App");
     } catch (error) {
