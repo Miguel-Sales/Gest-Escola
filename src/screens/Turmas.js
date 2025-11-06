@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import dynamoDB from "../../awsConfig";
 import {
   View,
   Text,
@@ -20,11 +21,7 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-// ⚠️ NÃO USE CREDENCIAIS DIRETAMENTE EM PRODUÇÃO!
-const AWS_ACCESS_KEY_ID = "ASIA47CRZHOBRSSE4LHQ";
-const AWS_SECRET_ACCESS_KEY = "W57/6pX8OJPSFE8g/e7ikzCNYdC9p2BQdrGH7X47";
-const AWS_SESSION_TOKEN = "IQoJb3JpZ2luX2VjELL//////////wEaCXVzLXdlc3QtMiJIMEYCIQCfVeNdI31OCl2+umzJtvOb7tNfggZ+HUyuCrvbuRXpOQIhAOsovyT632oQUjr6K0EM9Vqxomq+EUcIFGFtAIr0vXyTKsICCHsQABoMODkxMzc3MjM2ODY3Igw84lItRhBHF/xgQjIqnwIBRB6TQPN5UEJ9ZgQrDUdyspbZ1k2E7iblFOMMn7V8jbc0eA0HXaqU94iEOAzDhnFpw/qheU/abHxRdJ+O5NNFJXp/q+BFMREIcl6EBS4mSTYmeDnK6lZHOKC5758q+rO6fi4A91zFY/V04URocdwdq9QmYueMmq/cV+9mB9jctYj1/rSIzJ/v5B+wY61TJXGBi9MhF3o4jJcUB7H6S6YFeycHRADYOOunOqcpIDG6q3rZF6U7iZ8T05HJmXXmXqjmn1S7kJZ6tT8Ewl5Kr/hBbxL5qRe6wUL5jXdPDiTaF11vboJz0b8sIWM9wZgYsfwLrjsxcfifRi0yZ1zZIZTKFRiuoz1oUYHetr/R49/XXczlIOXI4IF1H9SSBHhM/TDm/6jIBjqcAcblofBPWyQmmnEv3z/PPQx5MHJNi7+suJztDUvtriFCa2hdpXTHQ84MBByZivuMxqDI6BwS9ts0sNDxRjmARdaL6mg7RU8zJJdcKfT+OUDI2anL874yBptmJkm5Bns8VgbWfn9DUiLPICZPrAShqjD3ggXO3sRk6TFdmKADqvVxjNZ5Wa08WuRyVcZtxZpviFTjT3YQQRyPHzejXA==";
-const REGION = "us-east-1";
+
 
 const TABELA_TURMAS = "Turmas";
 
@@ -37,14 +34,7 @@ export default function Turmas() {
   const [turmaSelecionada, setTurmaSelecionada] = useState(null);
   const [novoNome, setNovoNome] = useState("");
 
-  const client = new DynamoDBClient({
-    region: REGION,
-    credentials: {
-      accessKeyId: AWS_ACCESS_KEY_ID,
-      secretAccessKey: AWS_SECRET_ACCESS_KEY,
-      sessionToken: AWS_SESSION_TOKEN,
-    },
-  });
+ 
   const db = DynamoDBDocumentClient.from(client);
 
   const listarTurmas = async () => {
