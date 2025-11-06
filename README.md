@@ -1,3 +1,7 @@
+👨‍💻 Feito por:
+MIguel Sales 
+Victor Koba
+
 # 📘 Gestão Escolar - Módulo de Turmas
 
 Aplicativo desenvolvido em **React Native com Expo**, integrado ao serviço **AWS DynamoDB**.  
@@ -12,8 +16,7 @@ O sistema foi criado para **gerenciar turmas escolares**, permitindo **cadastrar
 - ✏️ Editar o nome de turmas existentes.  
 - ❌ Excluir turmas diretamente da lista.  
 - ☁️ Integração direta com **AWS DynamoDB**.  
-- 💾 Armazenamento em nuvem com **chaves únicas (pk-turma, sk-turma)**.  
-- 🎨 Interface moderna, com logotipo e layout azul arredondado.  
+- 💾 Armazenamento em nuvem com **chaves únicas (pk-turma, sk-turma)**.    
 
 ---
 
@@ -50,8 +53,7 @@ Turmas
 ## ⚙️ Como Executar o Projeto
 
 1. **Clonar o repositório:**
-   ```bash
-   git clone https://github.com/seuusuario/gestao-escolar.git
+   
 Instalar as dependências:
 
 npm install
@@ -86,14 +88,6 @@ O ícone de olho permite editar o nome da turma.
 
 O ícone de lixeira exclui a turma do banco DynamoDB.
 
-🖼️ Layout e Design
-Cores principais: Azul (#2d73b5) e Branco (#ffffff)
-
-Estilo limpo e responsivo.
-
-Parte superior com logotipo, parte inferior com fundo azul arredondado.
-
-Ícones claros e acessíveis (Ionicons).
 
 🧩 Estrutura do Projeto
 
@@ -116,6 +110,4 @@ Ele serve como base para sistemas escolares, administrativos ou de gestão que p
 O design é responsivo, mantendo a identidade visual azul e branca com elementos arredondados e ícones intuitivos.
 O projeto é parte do portfólio da Code Produces, empresa que oferece soluções tecnológicas inteligentes para educação e agronegócio, promovendo eficiência, automação e modernização de processos.
 
-👨‍💻 Feito por
-MIguel Sales 
-Victor Koba
+
