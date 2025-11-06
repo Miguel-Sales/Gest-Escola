@@ -148,78 +148,109 @@ export default function Turmas() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContent}>
-      <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Nova Turma</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Nome da turma"
-              value={novaTurma}
-              onChangeText={setNovaTurma}
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#2d73b5" }]}
-                onPress={adicionarTurma}
-              >
-                <Text style={styles.modalButtonText}>Salvar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#999" }]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.modalButtonText}>Cancelar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <View style={styles.container}>
-        <Image style={styles.logo} source={require("../assets/turma-logo.png")} />
-        <View style={styles.content}>
-          <View style={styles.headerContainer}>
-            <Text style={styles.title}>Turmas</Text>
-            <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Ionicons name="add-circle" size={50} color="#fff" />
+  <ScrollView contentContainerStyle={styles.scrollContent}>
+    {/* ✅ Modal de NOVA turma */}
+    <Modal visible={modalVisible} animationType="slide" transparent>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Nova Turma</Text>
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Nome da turma"
+            value={novaTurma}
+            onChangeText={setNovaTurma}
+          />
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: "#2d73b5" }]}
+              onPress={adicionarTurma}
+            >
+              <Text style={styles.modalButtonText}>Salvar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: "#999" }]}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.modalButtonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
-
-          {loading ? (
-            <ActivityIndicator size="large" color="#fff" />
-          ) : turmas.length === 0 ? (
-            <Text style={styles.noActivities}>Nenhuma turma cadastrada.</Text>
-          ) : (
-            turmas.map((item) => (
-              <View key={item["pk-turma"]} style={styles.card}>
-                <Text style={styles.cardTitle}>{item.nome}</Text>
-                <View style={styles.cardActions}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setTurmaSelecionada(item);
-                      setNovoNome(item.nome);
-                      setModalEditarVisible(true);
-                    }}
-                  >
-                    <Ionicons name="eye-outline" size={26} color="#2d73b5" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() =>
-                      excluirTurma(item["pk-turma"], item["sk-turma"])
-                    }
-                  >
-                    <Ionicons name="trash-outline" size={26} color="#b52d2d" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))
-          )}
         </View>
       </View>
-    </ScrollView>
-  );
+    </Modal>
+
+    {/* ✅ Modal de EDITAR turma */}
+    <Modal visible={modalEditarVisible} animationType="slide" transparent>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Editar Turma</Text>
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Novo nome da turma"
+            value={novoNome}
+            onChangeText={setNovoNome}
+          />
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: "#2d73b5" }]}
+              onPress={salvarEdicao}
+            >
+              <Text style={styles.modalButtonText}>Salvar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: "#999" }]}
+              onPress={() => setModalEditarVisible(false)}
+            >
+              <Text style={styles.modalButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+
+    <View style={styles.container}>
+      <Image style={styles.logo} source={require("../assets/turma-logo.png")} />
+      <View style={styles.content}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>Turmas</Text>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Ionicons name="add-circle" size={50} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#fff" />
+        ) : turmas.length === 0 ? (
+          <Text style={styles.noActivities}>Nenhuma turma cadastrada.</Text>
+        ) : (
+          turmas.map((item) => (
+            <View key={item["pk-turma"]} style={styles.card}>
+              <Text style={styles.cardTitle}>{item.nome}</Text>
+              <View style={styles.cardActions}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setTurmaSelecionada(item);
+                    setNovoNome(item.nome);
+                    setModalEditarVisible(true); // ✅ Abre o modal de edição
+                  }}
+                >
+                  <Ionicons name="eye-outline" size={26} color="#2d73b5" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() =>
+                    excluirTurma(item["pk-turma"], item["sk-turma"])
+                  }
+                >
+                  <Ionicons name="trash-outline" size={26} color="#b52d2d" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+    </View>
+  </ScrollView>
+);
+
 }
 
 const styles = StyleSheet.create({
