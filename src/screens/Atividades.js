@@ -25,7 +25,6 @@ import {
 
 // === CREDENCIAIS AWS ===
 
-
 const TABELA_TURMAS = "Turmas";
 const TABELA_ATIVIDADES = "Atividades";
 

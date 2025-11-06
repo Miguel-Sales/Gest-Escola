@@ -22,7 +22,6 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 
-
 const TABELA_TURMAS = "Turmas";
 
 export default function Turmas() {

@@ -8,6 +8,7 @@ const AWS_SESSION_TOKEN = "IQoJb3JpZ2luX2VjENv//////////wEaCXVzLXdlc3QtMiJGMEQCI
 // Região da AWS (ajuste se for diferente)
 const REGION = "us-east-1";
 
+
 // Configuração do DynamoDB
 export const dynamoDB = new DynamoDBClient({
   region: REGION,

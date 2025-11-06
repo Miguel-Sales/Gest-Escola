@@ -12,70 +12,67 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ScanCommand } from "@aws-sdk/client-dynamodb";
+import { PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { Ionicons } from "@expo/vector-icons";
 import bcrypt from "bcryptjs";
 
-export default function LoginScreen({ navigation }) {
+export default function CriarContaScreen({ navigation }) {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const fazerLogin = async () => {
-    if (!email || !senha) {
+  const criarConta = async () => {
+    if (!nome || !email || !senha) {
       Alert.alert("Erro", "Preencha todos os campos!");
       return;
     }
 
     setLoading(true);
+
     try {
-      const data = await dynamoDB.send(
-        new ScanCommand({
-          TableName: "usuarios",
-          FilterExpression: "email = :email",
-          ExpressionAttributeValues: {
-            ":email": { S: email },
-          },
-        })
-      );
+      // 🔒 Criptografa a senha
+      const salt = bcrypt.genSaltSync(10);
+      const senhaHash = bcrypt.hashSync(senha, salt);
 
-      if (!data.Items || data.Items.length === 0) {
-        Alert.alert("Erro", "Usuário não encontrado!");
-        setLoading(false);
-        return;
-      }
+      // 🔑 Chaves de partição/sort key para DynamoDB
+      const pk = `professor#${email}`;
+      const sk = `data#${Date.now()}`;
 
-      const usuario = data.Items[0];
-      const senhaHash = usuario.senha.S;
+      // 🧾 Objeto do novo professor
+      const novoProfessor = {
+        TableName: "Professores",
+        Item: {
+          pk: { S: pk },
+          sk: { S: sk },
+          nome: { S: nome },
+          email: { S: email },
+          senha: { S: senhaHash },
+        },
+      };
 
-      const senhaCorreta = await bcrypt.compare(senha, senhaHash);
+      // 🚀 Envia para o DynamoDB
+      await dynamoDB.send(new PutItemCommand(novoProfessor));
 
-      if (!senhaCorreta) {
-        Alert.alert("Erro", "Senha incorreta!");
-        setLoading(false);
-        return;
-      }
-
-      const tipoUsuario = usuario.tipo.S;
-
+      // 💾 Armazena localmente (opcional)
       await AsyncStorage.setItem(
         "usuarioLogado",
-        JSON.stringify({
-          id: usuario.id.S,
-          nome: usuario.nome.S,
-          email: usuario.email.S,
-          tipo: tipoUsuario,
-        })
+        JSON.stringify({ nome, email })
       );
 
-      Alert.alert("Sucesso", `Bem-vindo, ${usuario.nome.S}!`);
-      await AsyncStorage.setItem("usuarioId", usuario.id.N);
-
-      navigation.navigate("Inicio");
+      // ✅ Mensagem de sucesso e redirecionamento
+      Alert.alert("Sucesso", "Conta criada com sucesso!", [
+        {
+          text: "Ir para Login",
+          onPress: () => navigation.replace("Login"),
+        },
+      ]);
     } catch (error) {
-      console.error("Erro ao fazer login:", error);
-      Alert.alert("Erro", "Falha na autenticação. Tente novamente.");
+      console.error("❌ Erro ao criar conta:", error);
+      Alert.alert(
+        "Erro",
+        "Falha ao criar conta. Verifique se a tabela 'Professores' existe e está configurada corretamente no DynamoDB."
+      );
     } finally {
       setLoading(false);
     }
@@ -90,7 +87,6 @@ export default function LoginScreen({ navigation }) {
         />
 
         <View style={styles.loginCard}>
-          {/* 🔙 Linha com o botão de voltar e o título */}
           <View style={styles.headerRow}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Ionicons name="arrow-back" size={32} color="#fff" />
@@ -106,7 +102,6 @@ export default function LoginScreen({ navigation }) {
               placeholderTextColor="#2d73b5"
               value={nome}
               onChangeText={setNome}
-              autoCapitalize="none"
             />
           </View>
 
@@ -136,7 +131,7 @@ export default function LoginScreen({ navigation }) {
 
           <TouchableOpacity
             style={styles.button}
-            onPress={fazerLogin}
+            onPress={criarConta}
             disabled={loading}
           >
             {loading ? (
@@ -186,7 +181,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     marginLeft: 10,
-    fontFamily: "Roboto-Bold",
   },
   inputGroup: {
     width: "80%",
@@ -207,7 +201,6 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     color: "#2d73b5",
-    fontFamily: "Roboto-Bold",
   },
   button: {
     width: "60%",
@@ -223,6 +216,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
-    fontFamily: "Roboto-Bold",
   },
 });
