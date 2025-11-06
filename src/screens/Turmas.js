@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import dynamoDB from "../../awsConfig";
 import {
   View,
@@ -63,9 +64,11 @@ export default function Turmas() {
     }
   };
 
-  useEffect(() => {
-    listarTurmas();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      listarTurmas();
+    }, [])
+  );
 
   const adicionarTurma = async () => {
     if (!novaTurma.trim()) {

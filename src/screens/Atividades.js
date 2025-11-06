@@ -93,27 +93,24 @@ export default function Atividades() {
   };
 
   // === LISTAR ATIVIDADES ===
-  const listarAtividades = async () => {
-    try {
-      const data = await db.send(
-        new ScanCommand({
-          TableName: TABELA_ATIVIDADES,
-        })
-      );
-      setAtividades(data.Items || []);
-    } catch (error) {
-      console.error(
-        "Erro ao buscar atividades:",
-        error
-      );
-      Alert.alert(
-        "Erro",
-        "Não foi possível carregar as atividades."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+const listarAtividades = async () => {
+  try {
+    const data = await db.send(new ScanCommand({ TableName: TABELA_ATIVIDADES }));
+
+    // Remove duplicados com base na chave primária
+    const unicas = Array.from(
+      new Map((data.Items || []).map(item => [item["pk-atividade"], item])).values()
+    );
+
+    setAtividades(unicas);
+  } catch (error) {
+    console.error("Erro ao buscar atividades:", error);
+    Alert.alert("Erro", "Não foi possível carregar as atividades.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useFocusEffect(
     useCallback(() => {
