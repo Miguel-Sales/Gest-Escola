@@ -12,74 +12,74 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  QueryCommand,
-  PutItemCommand,
-} from "@aws-sdk/client-dynamodb";
+import { PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { Ionicons } from "@expo/vector-icons";
 import bcrypt from "bcryptjs";
 
-export default function CriarContaScreen({
-  navigation,
-}) {
+export default function CriarContaScreen({ navigation }) {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
 
-const criarConta = async () => {
-  if (!nome || !email || !senha) {
-    Alert.alert("Erro", "Preencha todos os campos!");
-    return;
-  }
+  const criarConta = async () => {
+    if (!nome || !email || !senha) {
+      Alert.alert("Erro", "Preencha todos os campos!");
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    // 🔒 Criptografa a senha
-    const salt = bcrypt.genSaltSync(10);
-    const senhaHash = bcrypt.hashSync(senha, salt);
+    try {
+      // 🔒 Criptografa a senha
+      const salt = bcrypt.genSaltSync(10);
+      const senhaHash = bcrypt.hashSync(senha, salt);
 
-    // 🧾 Cria o novo usuário no DynamoDB
-    const novoUsuario = {
-      TableName: "Professores",
-      Item: {
-        id: { S: Date.now().toString() },
-        nome: { S: nome },
-        email: { S: email },
-        senha: { S: senhaHash },
-      },
-    };
+      // 🔑 Chaves de partição/sort key para DynamoDB
+      const pk = `professor#${email}`;
+      const sk = `data#${Date.now()}`;
 
-    await dynamoDB.send(new PutItemCommand(novoUsuario));
+      // 🧾 Objeto do novo professor
+      const novoProfessor = {
+        TableName: "Professores",
+        Item: {
+          pk: { S: pk },
+          sk: { S: sk },
+          nome: { S: nome },
+          email: { S: email },
+          senha: { S: senhaHash },
+        },
+      };
 
-    // 💾 Salva dados localmente
-    await AsyncStorage.setItem(
-      "usuarioLogado",
-      JSON.stringify({
-        id: novoUsuario.Item.id.S,
-        nome: nome,
-        email: email,
-      })
-    );
+      // 🚀 Envia para o DynamoDB
+      await dynamoDB.send(new PutItemCommand(novoProfessor));
 
-    Alert.alert("Sucesso", "Conta criada com sucesso!");
-    navigation.navigate("Inicio");
-  } catch (error) {
-    console.error("Erro ao criar conta:", error);
-    Alert.alert("Erro", "Falha ao criar conta. Tente novamente.");
-  } finally {
-    setLoading(false);
-  }
-};
+      // 💾 Armazena localmente (opcional)
+      await AsyncStorage.setItem(
+        "usuarioLogado",
+        JSON.stringify({ nome, email })
+      );
+
+      // ✅ Mensagem de sucesso e redirecionamento
+      Alert.alert("Sucesso", "Conta criada com sucesso!", [
+        {
+          text: "Ir para Login",
+          onPress: () => navigation.replace("Login"),
+        },
+      ]);
+    } catch (error) {
+      console.error("❌ Erro ao criar conta:", error);
+      Alert.alert(
+        "Erro",
+        "Falha ao criar conta. Verifique se a tabela 'Professores' existe e está configurada corretamente no DynamoDB."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: "#2d73b5",
-      }}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#2d73b5" }}>
       <View style={styles.container}>
         <Image
           style={styles.logo}
@@ -88,18 +88,10 @@ const criarConta = async () => {
 
         <View style={styles.loginCard}>
           <View style={styles.headerRow}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons
-                name="arrow-back"
-                size={32}
-                color="#fff"
-              />
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={32} color="#fff" />
             </TouchableOpacity>
-            <Text style={styles.title}>
-              Criar conta
-            </Text>
+            <Text style={styles.title}>Criar conta</Text>
           </View>
 
           <View style={styles.inputGroup}>
@@ -110,14 +102,11 @@ const criarConta = async () => {
               placeholderTextColor="#2d73b5"
               value={nome}
               onChangeText={setNome}
-              autoCapitalize="none"
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              Email
-            </Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
               placeholder="Digite seu email"
@@ -129,9 +118,7 @@ const criarConta = async () => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              Senha
-            </Text>
+            <Text style={styles.label}>Senha</Text>
             <TextInput
               style={styles.input}
               placeholder="Digite sua senha"
@@ -150,9 +137,7 @@ const criarConta = async () => {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>
-                Confirmar
-              </Text>
+              <Text style={styles.buttonText}>Confirmar</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -196,7 +181,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     marginLeft: 10,
-    fontFamily: "Roboto-Bold",
   },
   inputGroup: {
     width: "80%",
@@ -217,7 +201,6 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     color: "#2d73b5",
-    fontFamily: "Roboto-Bold",
   },
   button: {
     width: "60%",
@@ -233,6 +216,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
-    fontFamily: "Roboto-Bold",
   },
 });

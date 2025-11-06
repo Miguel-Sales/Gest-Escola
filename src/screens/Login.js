@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScanCommand } from "@aws-sdk/client-dynamodb";
 import bcrypt from "bcryptjs";
@@ -28,16 +27,19 @@ export default function LoginScreen({ navigation }) {
     }
 
     setLoading(true);
+
     try {
+      // Buscar usuário pelo email
       const data = await dynamoDB.send(
-        new ScanCommand({
-          TableName: "usuarios",
-          FilterExpression: "email = :email",
-          ExpressionAttributeValues: {
-            ":email": { S: email },
-          },
-        })
-      );
+  new ScanCommand({
+    TableName: "Professores",
+    FilterExpression: "email = :email",
+    ExpressionAttributeValues: {
+      ":email": { S: email.trim().toLowerCase() },
+    },
+  })
+);
+
 
       if (!data.Items || data.Items.length === 0) {
         Alert.alert("Erro", "Usuário não encontrado!");
@@ -48,6 +50,19 @@ export default function LoginScreen({ navigation }) {
       const usuario = data.Items[0];
       const senhaHash = usuario.senha.S;
 
+      // Verifica se a senha salva é um hash válido
+      const isHashValida =
+        senhaHash.startsWith("$2a$") || senhaHash.startsWith("$2b$");
+
+      if (!isHashValida) {
+        Alert.alert(
+          "Erro",
+          "Senha salva incorretamente no banco. O cadastro deve criptografar a senha com bcrypt."
+        );
+        setLoading(false);
+        return;
+      }
+
       const senhaCorreta = await bcrypt.compare(senha, senhaHash);
 
       if (!senhaCorreta) {
@@ -56,26 +71,28 @@ export default function LoginScreen({ navigation }) {
         return;
       }
 
-      const tipoUsuario = usuario.tipo.S;
+      const tipoUsuario = usuario.tipo?.S || "professor";
 
+      // Salvar informações no AsyncStorage
       await AsyncStorage.setItem(
         "usuarioLogado",
         JSON.stringify({
-          id: usuario.id.S,
-          nome: usuario.nome.S,
-          email: usuario.email.S,
+          id: usuario.id?.S || usuario.id?.N || "",
+          nome: usuario.nome?.S || "",
+          email: usuario.email?.S || "",
           tipo: tipoUsuario,
         })
       );
 
-      Alert.alert("Sucesso", `Bem-vindo, ${usuario.nome.S}!`);
-      await AsyncStorage.setItem("usuarioId", usuario.id.N);
+      await AsyncStorage.setItem(
+        "usuarioId",
+        usuario.id?.S || usuario.id?.N || ""
+      );
 
-      if (tipoUsuario === "admin") {
-        navigation.navigate("Inicio");
-      } else {
-        navigation.navigate("Inicio");
-      }
+      Alert.alert("Sucesso", `Bem-vindo, ${usuario.nome.S}!`);
+
+      // Redirecionar conforme tipo de usuário
+      navigation.navigate("App");
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       Alert.alert("Erro", "Falha na autenticação. Tente novamente.");
@@ -87,7 +104,10 @@ export default function LoginScreen({ navigation }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#2d73b5" }}>
       <View style={styles.container}>
-        <Image style={styles.logo} source={require("../assets/turma-logo.png")} />
+        <Image
+          style={styles.logo}
+          source={require("../assets/turma-logo.png")}
+        />
 
         <View style={styles.loginCard}>
           <Text style={styles.title}>Entre na sua{"\n"}conta</Text>
@@ -128,10 +148,10 @@ export default function LoginScreen({ navigation }) {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => navigation.navigate("CriarConta")}
-          >
-            <Text style={styles.forgotPassword}>Não possui uma conta? Crie uma conta</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("CriarConta")}>
+            <Text style={styles.forgotPassword}>
+              Não possui uma conta? Crie uma conta
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

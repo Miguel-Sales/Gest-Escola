@@ -18,7 +18,7 @@ export default function NativeStack() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName="App"
+      initialRouteName="Login"
     >
       {/* Splash inicial */}
       <Stack.Screen
