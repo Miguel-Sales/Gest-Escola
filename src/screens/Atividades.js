@@ -24,6 +24,11 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 // === CREDENCIAIS AWS ===
+const AWS_ACCESS_KEY_ID = "ASIA47CRZHOB4QGKYHVS";
+const AWS_SECRET_ACCESS_KEY = "6r4edg8xAKfA9+8/ehRgbJnTO37xvD6vwYTvDcrz";
+const AWS_SESSION_TOKEN = "IQoJb3JpZ2luX2VjENv//////////wEaCXVzLXdlc3QtMiJGMEQCIGoVOyT8LsG6BkLQqkVJPtFsywonLPkTJh7NLDQC6hvwAiAUde8FZjiLtTC5EwjfQa9B4HZzekIXDo4vFuSFslLSXyrLAgik//////////8BEAAaDDg5MTM3NzIzNjg2NyIMyLoV3FBanm4GbDWQKp8CLC+3Mz4KGuDr97Rb7ga2fKJU1YdVQ+mmtR+gqQ+HtcDvoG77mGqVqepWGNLe2FSAcogL1rW0NSBJ+zwg5WB355qDAht8ALt5/2k31rP83C2klG50yN9/7siwDALLFifY05mCc1nZ7I6cEe218iVQNGrhcod7d/lkXsWOumJvAtjZNbMIJ2sqOhUofVYZ9L2YZa+YgbjfRhgAoQD0s7mwLBH5E6Op8G+J1Xek9kViTY8Fs7c+N61PJ9i5eaACcNXOfmhHNEkMjMxBtyijAhQjEm6D5gtmy8CDwK14gskJ5ybPDfKVy960QZUXMyiFMfoki7K1H8HOFqIQ52HGAdEXP3MQ97tCj4dGCXxA8Z3iXLnaQnE+yXZyBvdlLkXp5B0wmYGyyAY6ngFQ0vAdQb1EVqn5zWtzezLgDKTPTkzaYZO9jXyseqRtpvjV8d+v36WOu/bgGbSkW+xJfaKdguVyEVkMvEusecjUdldrvz/mylueu3goezUQKLbyU1YygLv8zNvDtPxhm9Qe4kDX3/BYoXFA4qjUP09qdff67UOqj0J5mD+N1C+LwDs3pa9uhY252H3lwa0W/KpJlMRjHlDTPPfVAd6IRQ==";
+
+const REGION = "us-east-1";
 
 const TABELA_TURMAS = "Turmas";
 const TABELA_ATIVIDADES = "Atividades";
@@ -40,9 +45,18 @@ export default function Atividades() {
   const [modalVisivel, setModalVisivel] = useState(false);
   const [loading, setLoading] = useState(true);
 
- 
+   // === CONFIGURAÇÃO DYNAMODB ===
+  const client = new DynamoDBClient({
+    region: REGION,
+    credentials: {
+      accessKeyId: AWS_ACCESS_KEY_ID,
+      secretAccessKey: AWS_SECRET_ACCESS_KEY,
+      sessionToken: AWS_SESSION_TOKEN,
+    },
+  });
   const db = DynamoDBDocumentClient.from(client);
 
+ 
   // === LISTAR TURMAS ===
   const listarTurmas = async () => {
     try {
